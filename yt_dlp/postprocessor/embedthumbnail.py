@@ -78,13 +78,23 @@ class EmbedThumbnailPP(FFmpegPostProcessor):
         convertor.fixup_webp(info, idx)
 
         original_thumbnail = thumbnail_filename = info['thumbnails'][idx]['filepath']
-
-        # Convert unsupported thumbnail formats (see #25687, #25717)
-        # PNG is preferred since JPEG is lossy
         thumbnail_ext = os.path.splitext(thumbnail_filename)[1][1:]
-        if info['ext'] not in ('mkv', 'mka') and thumbnail_ext not in ('jpg', 'jpeg', 'png'):
-            thumbnail_filename = convertor.convert_thumbnail(thumbnail_filename, 'png')
-            thumbnail_ext = 'png'
+
+        # サムネイルを正方形に切り出してjpgで保存する.
+        from PIL import Image
+        img = Image.open(thumbnail_filename)
+        w, h = img.size
+        if w != h or thumbnail_ext.lower() not in ('jpg', 'jpeg'):
+            if w > h:
+                x = (w - h) // 2
+                img = img.crop((x, 0, x+h, h))
+            elif h > w:
+                y = (h - w) // 2
+                img = img.crop((0, y, w, y+w))
+            name = os.path.splitext(thumbnail_filename)[0]
+            thumbnail_filename = name + "_cropped.jpg"
+            thumbnail_ext = 'jpg'
+            img.save(thumbnail_filename, quality=96)
 
         mtime = os.stat(encodeFilename(filename)).st_mtime
 
