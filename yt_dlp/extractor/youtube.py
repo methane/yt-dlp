@@ -4070,6 +4070,9 @@ class YoutubeIE(YoutubeBaseInfoExtractor):
         webpage_url = base_url + 'watch?v=' + video_id
 
         webpage, master_ytcfg, player_responses, player_url = self._download_player_responses(url, smuggled_data, video_id, webpage_url)
+        # langが反映されないリクエストを先に投げているので、順序を逆にして日本語の情報を取得している
+        # todo: 最初の方のリクエストを修正する。
+        player_responses.reverse()
 
         playability_statuses = traverse_obj(
             player_responses, (..., 'playabilityStatus'), expected_type=dict)
@@ -4090,10 +4093,8 @@ class YoutubeIE(YoutubeBaseInfoExtractor):
             player_responses, (..., 'microformat', 'playerMicroformatRenderer'),
             expected_type=dict)
 
-        translated_title = self._get_text(microformats, (..., 'title'))
-        video_title = (self._preferred_lang and translated_title
-                       or get_first(video_details, 'title')  # primary
-                       or translated_title
+        video_title = (video_details[0]['title']  # primary
+                       or get_first(video_details, 'title')
                        or search_meta(['og:title', 'twitter:title', 'title']))
         translated_description = self._get_text(microformats, (..., 'description'))
         original_description = get_first(video_details, 'shortDescription')
