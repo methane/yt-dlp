@@ -836,6 +836,7 @@ class InfoExtractor:
         elif not isinstance(url_or_request, Request):
             url_or_request = Request(url_or_request)
 
+        # print("creating request:", data, headers, query)
         url_or_request.update(data=data, headers=headers, query=query, extensions=extensions)
         return url_or_request
 
