@@ -95,6 +95,7 @@ class EmbedThumbnailPP(FFmpegPostProcessor):
             thumbnail_filename = name + "_cropped.jpg"
             thumbnail_ext = 'jpg'
             img.save(thumbnail_filename, quality=96)
+            os.remove(original_thumbnail)
 
         mtime = os.stat(encodeFilename(filename)).st_mtime
 

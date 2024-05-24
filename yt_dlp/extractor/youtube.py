@@ -4089,6 +4089,9 @@ class YoutubeIE(YoutubeBaseInfoExtractor):
                        if webpage else (lambda x: None))
 
         video_details = traverse_obj(player_responses, (..., 'videoDetails'), expected_type=dict)
+        # for r in player_responses:
+        #     video_details = r["videoDetails"]
+        #     print(video_details)
         microformats = traverse_obj(
             player_responses, (..., 'microformat', 'playerMicroformatRenderer'),
             expected_type=dict)
@@ -4096,6 +4099,16 @@ class YoutubeIE(YoutubeBaseInfoExtractor):
         video_title = (video_details[0]['title']  # primary
                        or get_first(video_details, 'title')
                        or search_meta(['og:title', 'twitter:title', 'title']))
+        # print("=========")
+        # from pprint import pprint
+        # # microformatには日本語の情報がない
+        # print("Microformats:")
+        # for m in microformats:
+        #     pprint(m)
+        # print(self._preferred_lang)
+        # print(video_title)
+        # print(video_details[0])
+        # print("=========")
         translated_description = self._get_text(microformats, (..., 'description'))
         original_description = get_first(video_details, 'shortDescription')
         video_description = (
@@ -4221,10 +4234,9 @@ class YoutubeIE(YoutubeBaseInfoExtractor):
         self._remove_duplicate_formats(thumbnails)
         self._downloader._sort_thumbnails(original_thumbnails)
 
-        category = get_first(microformats, 'category') or search_meta('genre')
+        category = search_meta('genre')
         channel_id = self.ucid_or_none(str_or_none(
             get_first(video_details, 'channelId')
-            or get_first(microformats, 'externalChannelId')
             or search_meta('channelId')))
         owner_profile_url = get_first(microformats, 'ownerProfileUrl')
 
